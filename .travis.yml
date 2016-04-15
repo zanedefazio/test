@@ -6,4 +6,4 @@ services:
 notifications:
   email: false
 
-script: node app.js & sleep 5 & mocha app.spec.js
+script: node app.js & sleep 5 && mocha app.spec.js
