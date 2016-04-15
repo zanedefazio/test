@@ -1,80 +1,48 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var jsonParser = bodyParser.json();
-var mongo = require('mongodb');
-var myClient = mongo.MongoClient;
-var url = 'mongodb://localhost/test';
+var request = require('request');
+var chai = require('chai');
+var assert = chai.assert;
 
-app.use(jsonParser);
-
-app.post('/api', function(req, res) {
-  myClient.connect(url, function(error, db) {
-    if (!error) {
-      var books = db.collection('books');
-      books.insert({
-        title: req.body.title,
-        author: req.body.author
-      }, function(error, results) {
-        res.send(results.result);
-        db.close();
-      });
-    } else {
-      res.sendStatus(500);
-      console.log('Could not connect to the datbase: ' + error);
-    }
+describe('API Routes:', function() {
+  it('GET: entries found', function(done) {
+    request('http://localhost:8080/api', function(error, response, body) {
+      assert.equal(response.statusCode, 200)
+      done();
+    });
   });
-});
 
-app.get('/api', function(req, res) {
-  myClient.connect(url, function(error, db) {
-    if (!error) {
-      var books = db.collection('books');
-      books.find({}).toArray(function(error, results) {
-        res.json(results);
-        db.close();
-      });
-    } else {
-      res.sendStatus(500);
-      console.log('Could not connect to the datbase: ' + error);
-    }
+  it('POST: entry added', function(done) {
+    request({
+      method: 'POST',
+      url: 'http://localhost:8080/api',
+      json: { title: 'blank', author: 'blank' }
+    },
+    function(error, response, body) {
+      assert.equal(response.statusCode, 200)
+      done();
+    });
   });
-});
 
-app.put('/api', function(req, res) {
-  myClient.connect(url, function(error, db) {
-    if (!error) {
-      var books = db.collection('books');
-      books.update(
-        { author: req.body.author },
-        { $set: { title: req.body.title }},
-        function(error, results) {
-          res.send(results.result);
-          db.close();
-        }
-      );
-    } else {
-      res.sendStatus(500);
-      console.log('Could not connect to the datbase: ' + error);
-    }
+  it('PUT: entry updated', function(done) {
+    request({
+      method: 'PUT',
+      url: 'http://localhost:8080/api',
+      json: { title: 'untitled', author: 'blank' }
+    },
+    function(error, response, body) {
+      assert.equal(response.statusCode, 200)
+      done();
+    });
   });
-});
 
-app.delete('/api', function(req, res) {
-  myClient.connect(url, function(error, db) {
-    if (!error) {
-      var books = db.collection('books');
-      books.remove({ title: req.body.title }, function(error, results) {
-        res.send(results.result);
-        db.close();
-      });
-    } else {
-      res.sendStatus(500);
-      console.log('Could not connect to the datbase: ' + error);
-    }
+  it('DELETE: entry deleted', function(done) {
+    request({
+      method: 'DELETE',
+      url: 'http://localhost:8080/api',
+      json: { title: 'untitled' }
+    },
+    function(error, response, body) {
+      assert.equal(response.statusCode, 200)
+      done();
+    });
   });
-});
-
-app.listen(8080, function() {
-  console.log('server started');
 });
