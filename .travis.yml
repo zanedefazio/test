@@ -1,1 +1,7 @@
-language: node_js
+services:
+  - mongodb
+
+notifications:
+  email: false
+
+script: node app.js & sleep 5 & mocha app.spec.js
